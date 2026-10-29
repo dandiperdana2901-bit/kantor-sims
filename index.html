@@ -104,7 +104,7 @@ const ICO={'clip': '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none
 const hl=id=>document.querySelectorAll('.tb').forEach(b=>b.classList.toggle('on',b.id===id));
 const starS=n=>'<span class="st">'+'★'.repeat(n)+'</span>';
 const R=new T.WebGLRenderer({canvas:$('c'),antialias:true});R.setPixelRatio(Math.min(devicePixelRatio,2));R.shadowMap.enabled=true;R.shadowMap.type=T.PCFSoftShadowMap;
-const sc=new T.Scene();sc.background=new T.Color(0x8fd0ff);const cam=new T.PerspectiveCamera(40,1,.1,300);
+const sc=new T.Scene();sc.background=new T.Color(0x8fd0ff);sc.fog=new T.Fog(0x8fd0ff,60,175);const cam=new T.PerspectiveCamera(40,1,.1,300);
 const hemi=new T.HemisphereLight(0xffffff,0x9ab88a,.6);sc.add(hemi);
 const dl=new T.DirectionalLight(0xfff3dd,.85);dl.position.set(-10,22,14);dl.castShadow=true;dl.shadow.normalBias=.03;dl.shadow.mapSize.set(2048,2048);Object.assign(dl.shadow.camera,{left:-34,right:34,top:34,bottom:-34,near:1,far:90});sc.add(dl);
 
@@ -126,7 +126,7 @@ function applyLight(){
  const d=new Date(),h=lightTest!=null?lightTest:d.getHours()+d.getMinutes()/60;
  let i=0;while(i<LK.length-2&&h>=LK[i+1][0])i++;
  const a=LK[i],b=LK[i+1],k=Math.min(1,Math.max(0,(h-a[0])/(b[0]-a[0])));
- sc.background.set(a[1]).lerp(lc.set(b[1]),k);
+ sc.background.set(a[1]).lerp(lc.set(b[1]),k);sc.fog.color.copy(sc.background);
  hemi.color.set(a[2]).lerp(lc.set(b[2]),k);hemi.groundColor.set(a[3]).lerp(lc.set(b[3]),k);hemi.intensity=a[4]+(b[4]-a[4])*k;
  dl.color.set(a[5]).lerp(lc.set(b[5]),k);dl.intensity=a[6]+(b[6]-a[6])*k;
  let sunUp=0;
@@ -252,21 +252,21 @@ function roadT(){return cvT(128,(g,n)=>{g.fillStyle='#868690';g.fillRect(0,0,n,n
 const woodBase=cvT(64,(g,n)=>{const tn=['#c99a62','#bf8f58','#d3a46c','#b98752'];for(let i=0;i<4;i++){g.fillStyle=tn[i];g.fillRect(i*16,0,16,n);g.fillStyle='rgba(90,55,25,.35)';for(let k=0;k<5;k++)g.fillRect(i*16+2+Math.random()*11,0,1,n)}
  g.fillStyle='#6b4524';for(let i=0;i<4;i++)g.fillRect(i*16,0,2,n);g.fillStyle='rgba(60,35,15,.45)';g.fillRect(0,10,n,3);g.fillRect(0,n-13,n,3)},1,1);
 const fm=l=>{const t=woodBase.clone();t.needsUpdate=true;t.repeat.set(Math.max(1,l/1.1),1);return new T.MeshLambertMaterial({map:t,color:0xf0f0f0})};
-const lawn=new T.Mesh(new T.PlaneGeometry(140,140),new T.MeshLambertMaterial({map:grassT(),color:0xf0f0f0}));lawn.rotation.x=-Math.PI/2;lawn.receiveShadow=true;sc.add(lawn);
-{const tl=new T.TextureLoader(),rp=t=>{t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.set(35,35);t.anisotropy=AN;return t};
+const lawn=new T.Mesh(new T.PlaneGeometry(560,560),new T.MeshLambertMaterial({map:grassT(),color:0xf0f0f0}));lawn.material.map.repeat.set(140,140);lawn.rotation.x=-Math.PI/2;lawn.receiveShadow=true;sc.add(lawn);
+{const tl=new T.TextureLoader(),rp=t=>{t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.set(140,140);t.anisotropy=AN;return t};
  tl.load('textures/Grass004_1K-JPG_Color.jpg',t=>{lawn.material.map=rp(t);lawn.material.color.set(0xffffff);lawn.material.needsUpdate=true;
   tl.load('textures/Grass004_1K-JPG_NormalGL.jpg',n=>{lawn.material.normalMap=rp(n);lawn.material.needsUpdate=true},undefined,()=>{})},undefined,()=>console.warn('texture rumput belum ada, pakai bawaan'))}
 const tree=(x,z,s=1)=>{C(sc,.22*s,1*s,x,0,z,0x7a5230);mk(sc,new T.ConeGeometry(1.2*s,2.2*s,8),x,2.1*s,z,0x2f8a4a);mk(sc,new T.ConeGeometry(.9*s,1.8*s,8),x,3.1*s,z,0x3aa05a)};
 const _n0=sc.children.length;[[-11,-9],[11,-9],[-11,9],[11,9],[9,-2],[-10.5,2],[0,-9.5],[7,10.5]].forEach(p=>tree(...p));const FBT=sc.children.slice(_n0);
 /* ===== LINGKUNGAN GLB: jalan di depan rumah & pohon ===== */
 const ZR=20,ROADW=10;
-{const g=new T.Group();B(g,150,.03,ROADW,0,0,ZR,0x868690);B(g,150,.05,1.6,0,0,ZR-ROADW/2-1,0xe3d3c6);for(let x=-70;x<=70;x+=5)B(g,2,.04,.2,x,0,ZR,0xffffff);sc.add(g);window.FBR=g}
+{const g=new T.Group();B(g,420,.03,ROADW,0,0,ZR,0x868690);B(g,420,.05,1.6,0,0,ZR-ROADW/2-1,0xe3d3c6);for(let x=-205;x<=205;x+=5)B(g,2,.04,.2,x,0,ZR,0xffffff);sc.add(g);window.FBR=g}
 (function(){
  const ld=src=>new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=no;document.head.appendChild(s)});
  const need=()=>T.GLTFLoader?Promise.resolve():ld('GLTFLoader.js').catch(()=>ld('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js'));
  const get=u=>need().then(()=>new Promise((ok,no)=>new T.GLTFLoader().load(u,g=>ok(g.scene),undefined,no)));
  const fitH=(o,h)=>{const b=new T.Box3().setFromObject(o),z=b.getSize(new T.Vector3()),c=b.getCenter(new T.Vector3()),k=h/z.y,w=new T.Group();o.scale.setScalar(k);o.position.set(-c.x*k,-b.min.y*k,-c.z*k);w.add(o);return w};
- get('models/highway-segment.glb').then(o=>{const b=new T.Box3().setFromObject(o),z=b.getSize(new T.Vector3()),c=b.getCenter(new T.Vector3()),ax=z.x>=z.z,k=ROADW/(ax?z.z:z.x),L=(ax?z.x:z.z)*k,h=Math.min(30,Math.floor((Math.ceil(150/L)+1)/2)),grp=new T.Group();
+ get('models/highway-segment.glb').then(o=>{const b=new T.Box3().setFromObject(o),z=b.getSize(new T.Vector3()),c=b.getCenter(new T.Vector3()),ax=z.x>=z.z,k=ROADW/(ax?z.z:z.x),L=(ax?z.x:z.z)*k,h=Math.min(22,Math.floor((Math.ceil(400/L)+1)/2)),grp=new T.Group();
   for(let i=-h;i<=h;i++){const w=new T.Group(),m=o.clone(true);m.scale.setScalar(k);m.position.set(-c.x*k,-b.min.y*k+.02,-c.z*k);w.add(m);if(!ax)w.rotation.y=Math.PI/2;w.position.set(i*L,0,ZR);grp.add(w)}
   sc.add(grp);sc.remove(window.FBR)}).catch(e=>console.warn('jalan gagal dimuat',e));
  const DT=['apple-tree','autumn-tree','birch-tree','oak-tree'],TU=n=>'models/'+(/\.(glb|gltf)$/i.test(n)?n:n+'.glb');
@@ -277,6 +277,23 @@ const ZR=20,ROADW=10;
   P.forEach(p=>{const t=a[Math.floor(r2()*a.length)].clone(true);t.scale.setScalar(.85+r2()*.4);t.rotation.y=r2()*6.28;t.position.set(p[0],0,p[1]);sc.add(t)});
   FBT.forEach(o=>sc.remove(o))}).catch(e=>console.warn('pohon gagal dimuat',e));
 })();
+
+/* ===== cakrawala: bukit landai & hutan jauh melingkari kantor ===== */
+(function(){let sd=11;const r=()=>(sd=(sd*16807)%2147483647)/2147483647;
+ const hg=new T.SphereGeometry(1,20,12,0,6.2832,0,1.5708),cols=[0x4f8a35,0x5a9a3c,0x467d30,0x62a043];
+ for(let i=0;i<44;i++){const an=i/44*6.2832+r()*.1,d=125+r()*55,x=Math.cos(an)*d,z=Math.sin(an)*d;
+  if(Math.abs(z-20)<16)continue;
+  const m=new T.Mesh(hg,new T.MeshLambertMaterial({color:cols[i%4]})),w=26+r()*30;m.scale.set(w,9+r()*17,w*(.7+r()*.5));m.position.set(x,-1.5,z);m.rotation.y=r()*3;sc.add(m)}
+ const N=240,tr=new T.InstancedMesh(new T.CylinderGeometry(.2,.28,1.6,5),new T.MeshLambertMaterial({color:0x6a4a2a}),N),
+  c1=new T.InstancedMesh(new T.ConeGeometry(1.5,3.4,6),new T.MeshLambertMaterial({color:0x2f7a40}),N),
+  c2=new T.InstancedMesh(new T.ConeGeometry(1.1,2.8,6),new T.MeshLambertMaterial({color:0x3a9650}),N),d=new T.Object3D();let n=0;
+ for(let k=0;k<2000&&n<N;k++){const an=r()*6.2832,dd=70+r()*80,x=Math.cos(an)*dd,z=Math.sin(an)*dd;
+  if(Math.abs(z-20)<9||(Math.abs(x)<40&&Math.abs(z)<30))continue;
+  const s=1.6+r()*1.8;
+  d.position.set(x,.8*s,z);d.scale.setScalar(s);d.rotation.set(0,0,0);d.updateMatrix();tr.setMatrixAt(n,d.matrix);
+  d.position.set(x,2.9*s,z);d.updateMatrix();c1.setMatrixAt(n,d.matrix);
+  d.position.set(x,4.6*s,z);d.updateMatrix();c2.setMatrixAt(n,d.matrix);n++}
+ [tr,c1,c2].forEach(m=>{m.count=n;m.instanceMatrix.needsUpdate=true;sc.add(m)})})();
 
 for(let i=0;i<10;i++)B(sc,1,.05,.9,-4,0,6.8+i*.9,0xe3d3c6);B(sc,.3,.5,.4,-1.2,0,10,0x333333);B(sc,.1,.7,.1,-1.2,0,10,0x6a4a2a);C(sc,.3,.7,1.8,0,10,0x9aa3a8);
 for(let i=0;i<14;i++){const x=-7.5+i*1.15;if(Math.abs(x+4)>1.6)[0xff5b7a,0xffd24a,0x6aa8ff].forEach((c,j)=>Sp(sc,.11,x+j*.14,.15,6.6+j*.1,c))}
