@@ -297,8 +297,8 @@ const ZR=20,ROADW=10;
   d.position.set(x,4.6*s,z);d.updateMatrix();c2.setMatrixAt(n,d.matrix);n++}
  [tr,c1,c2].forEach(m=>{m.count=n;m.instanceMatrix.needsUpdate=true;sc.add(m)})})();
 
-for(let i=0;i<10;i++)B(sc,1,.05,.9,-4,0,6.8+i*.9,0xe3d3c6);B(sc,.3,.5,.4,-1.2,0,10,0x333333);B(sc,.1,.7,.1,-1.2,0,10,0x6a4a2a);C(sc,.3,.7,1.8,0,10,0x9aa3a8);
-for(let i=0;i<14;i++){const x=-7.5+i*1.15;if(Math.abs(x+4)>1.6)[0xff5b7a,0xffd24a,0x6aa8ff].forEach((c,j)=>Sp(sc,.11,x+j*.14,.15,6.6+j*.1,c))}
+B(sc,.3,.5,.4,-1.2,0,10,0x333333);B(sc,.1,.7,.1,-1.2,0,10,0x6a4a2a);C(sc,.3,.7,1.8,0,10,0x9aa3a8);
+
 rooms.forEach((r,i)=>{const[c,rw]=rc(i);r.ox=-8+c*8;r.oz=-6+rw*6;
  const f=new T.Mesh(new T.PlaneGeometry(8,6),new T.MeshLambertMaterial({map:tex(...r.t)}));f.rotation.x=-Math.PI/2;f.position.set(r.ox+4,.03,r.oz+3);f.receiveShadow=true;sc.add(f);floors[i]=f;
  const defs=r.k=='w'?[['d',2.4,1.8],['d',5.6,1.8],['d',2.4,4.1],['d',5.6,4.1],['p',7.3,.7],['p',.7,5.3]]:[['r',2.2,1.6],['r',5.8,1.6],['r',4,4.2],['p',7.3,.7],['p',.7,5.3]];
