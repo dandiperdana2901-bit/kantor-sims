@@ -105,8 +105,8 @@ const hl=id=>document.querySelectorAll('.tb').forEach(b=>b.classList.toggle('on'
 const starS=n=>'<span class="st">'+'★'.repeat(n)+'</span>';
 const R=new T.WebGLRenderer({canvas:$('c'),antialias:true});R.setPixelRatio(Math.min(devicePixelRatio,2));R.shadowMap.enabled=true;R.shadowMap.type=T.PCFSoftShadowMap;
 const sc=new T.Scene();sc.background=new T.Color(0x8fd0ff);sc.fog=new T.Fog(0x8fd0ff,60,175);const cam=new T.PerspectiveCamera(40,1,.1,300);
-const hemi=new T.HemisphereLight(0xffffff,0x9ab88a,.35);sc.add(hemi);
-const dl=new T.DirectionalLight(0xfff3dd,.55);dl.position.set(-10,22,14);dl.castShadow=true;dl.shadow.normalBias=.03;dl.shadow.mapSize.set(2048,2048);Object.assign(dl.shadow.camera,{left:-34,right:34,top:34,bottom:-34,near:1,far:90});sc.add(dl);
+const hemi=new T.HemisphereLight(0xffffff,0x9ab88a,.28);sc.add(hemi);
+const dl=new T.DirectionalLight(0xfff3dd,.45);dl.position.set(-10,22,14);dl.castShadow=true;dl.shadow.normalBias=.03;dl.shadow.mapSize.set(2048,2048);Object.assign(dl.shadow.camera,{left:-34,right:34,top:34,bottom:-34,near:1,far:90});sc.add(dl);
 
 /* ===== cahaya mengikuti jam asli HP: pagi, siang, sore, malam ===== */
 const LK=[ /* jam, langit, hemi atas, hemi bawah, kuat hemi, warna matahari, kuat matahari */
@@ -492,7 +492,7 @@ const ELFC={};EL_.forEach((e,i)=>{ELFC['el'+(i+1)]=['elektronik',e[0],e[1],e[2],
 FCAT.push(['elektronik','Electronics','📺']);
 
 const LTL=[];
-function ltMk(g,k,p){const o={g:g,k:k,t0:performance.now(),mats:[],dots:[],col:new T.Color(p.l||0xffd9a0),int:p.i||1.4,dist:p.d||6,h:p.h||1,in:false};LTL.push(o);return o}
+let ltGT=null;function ltGlow(g,o){try{if(!ltGT){const cv=document.createElement('canvas');cv.width=cv.height=128;const x=cv.getContext('2d'),gr=x.createRadialGradient(64,64,0,64,64,64);gr.addColorStop(0,'rgba(255,255,255,1)');gr.addColorStop(.25,'rgba(255,255,255,.45)');gr.addColorStop(.6,'rgba(255,255,255,.12)');gr.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=gr;x.fillRect(0,0,128,128);ltGT=new T.CanvasTexture(cv)}const m=new T.SpriteMaterial({map:ltGT,color:o.col.clone(),blending:T.AdditiveBlending,transparent:true,depthWrite:false,opacity:.6});const sp=new T.Sprite(m);const sz=Math.max(1.5,Math.min(o.dist*.8,5));sp.scale.set(sz,sz,1);sp.position.set(0,o.h,0);g.add(sp);return sp}catch(e){return null}}function ltMk(g,k,p){const o={g:g,k:k,t0:performance.now(),mats:[],dots:[],col:new T.Color(p.l||0xffd9a0),int:p.i||1.4,dist:p.d||6,h:p.h||1,in:false};o.glow=ltGlow(g,o);LTL.push(o);return o}
 function ltG(o,geo,x,y,z,c,an){const m=new T.MeshBasicMaterial({color:c});const me=new T.Mesh(geo,m);me.position.set(x,y,z);o.g.add(me);if(an)o.mats.push(m);return me}
 function ltCy(o,r1,r2,h,x,y,z,c,an){return ltG(o,new T.CylinderGeometry(r1,r2,h,14),x,y+h/2,z,c,an)}
 function ltSp(o,r,x,y,z,c,an){return ltG(o,new T.SphereGeometry(r,14,10),x,y,z,c,an)}
@@ -521,7 +521,7 @@ if(o.k==='rgb')o.col.setHSL((t*.1)%1,1,.5);
 else if(o.k==='disco'){o.col.setHSL((Math.floor(t*2.5)*.17)%1,1,.5);
 o.dots.forEach((d,j)=>{const a=t*1.6+j*1.0472;d.me.position.set(Math.cos(a)*.65,1.75+Math.sin(t*2+j)*.3,Math.sin(a)*.65);d.m.color.setHSL((t*.35+j/6)%1,1,.55)});
 if(o.wire)o.wire.rotation.y=t*.8}
-if(o.mats.length)o.mats.forEach(m=>m.color.copy(o.col))}
+if(o.mats.length)o.mats.forEach(m=>m.color.copy(o.col));if(o.glow)o.glow.material.color.copy(o.col)}
 if(ts-ltAs>400){ltAs=ts;
 for(let i=LTL.length-1;i>=0;i--){const o=LTL[i];let p=o.g;while(p&&p!==sc)p=p.parent;o.in=(p===sc);if(!o.in&&ts>o.t0+3000)LTL.splice(i,1)}
 const cp=(typeof cam!=='undefined')?cam.position:null;
