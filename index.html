@@ -229,7 +229,9 @@ let apps=[],nextApp=0,appId=1;let coins=300,gems=3,xp=0,lvl=1,earned=0,clock=0,b
 const items={},owned=rooms.map(q=>q.s?1:0),RL=rooms.map(()=>1),emps=[],slots=[],slotBy={},hits=[],floors=[];let boss=null;
 
 /* ===== halaman & kantor ===== */
-function tex(a,b){const c=document.createElement('canvas');c.width=c.height=64;const g=c.getContext('2d');g.fillStyle=a;g.fillRect(0,0,64,64);g.fillStyle=b;g.fillRect(0,0,32,32);g.fillRect(32,32,32,32);const t=new T.CanvasTexture(c);t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.set(4,3);return t}
+const TEXC={};
+function texImg(u){if(TEXC[u])return TEXC[u];const t=new THREE.TextureLoader().load(u);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(3,2);if(THREE.SRGBColorSpace)t.colorSpace=THREE.SRGBColorSpace;else if(THREE.sRGBEncoding)t.encoding=THREE.sRGBEncoding;t.anisotropy=4;TEXC[u]=t;return t}
+function tex(a,b){if(typeof a==='string'&&a.indexOf('img:')==0)return texImg(a.slice(4));const c=document.createElement('canvas');c.width=c.height=64;const g=c.getContext('2d');g.fillStyle=a;g.fillRect(0,0,64,64);g.fillStyle=b;g.fillRect(0,0,32,32);g.fillRect(32,32,32,32);const t=new T.CanvasTexture(c);t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.set(4,3);return t}
 /* ===== tekstur halaman (dibuat lewat kode, tanpa file gambar) ===== */
 const AN=R.capabilities.getMaxAnisotropy();
 function cvT(n,draw,rx,ry){const c=document.createElement('canvas');c.width=c.height=n;draw(c.getContext('2d'),n);const t=new T.CanvasTexture(c);t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.set(rx,ry);t.anisotropy=AN;return t}
@@ -312,7 +314,7 @@ function buildWalls(){wg.clear();WL=[];SWIN.length=0;for(let i=0;i<rooms.length;
  [['n',c,r-1],['s',c,r+1],['w',c-1,r],['e',c+1,r]].forEach(([sd,nc,nr])=>{const ni=ID(nc,nr),ex=ni>=0;if(ex&&owned[ni]&&ni<i)return;const sh=ex&&owned[ni];
   const hz=sd=='n'||sd=='s',g=new T.Group();wg.add(g);let a=hz?R4[0]:R4[2],b=hz?R4[1]:R4[3];if(sh){const q=RR(ni);a=Math.min(a,hz?q[0]:q[2]);b=Math.max(b,hz?q[1]:q[3])}
   const fx=sd=='n'?R4[2]:sd=='s'?R4[3]:sd=='w'?R4[0]:R4[1],dc=hz?ox+4:oz+3,cx=hz?dc:fx,cz=hz?fx:dc,gap=sh||(i==0&&sd=='s');
-  const seg=(p,q)=>{const l=q-p,m=(p+q)/2;B(g,hz?l+.25:.25,2.4,hz?.25:l+.25,hz?m:fx,0,hz?fx:m,0xf6ecdc);B(g,hz?l+.3:.34,.12,hz?.34:l+.3,hz?m:fx,2.4,hz?fx:m,0x7a5238)};
+  const seg=(p,q)=>{const l=q-p,m=(p+q)/2;B(g,hz?l+.25:.25,2.4,hz?.25:l+.25,hz?m:fx,0,hz?fx:m,(rooms[i].wc||0xf6ecdc));B(g,hz?l+.3:.34,.12,hz?.34:l+.3,hz?m:fx,2.4,hz?fx:m,0x7a5238)};
   if(gap){seg(a,dc-1);seg(dc+1,b)}else seg(a,b);
   if(!sh&&sd!='s')(sd=='n'?[-2,2]:[0]).forEach(o=>addWin(g,sd,hz?cx+o:cx,hz?cz:cz+o,ox,oz));
   if(i==0&&sd=='s'){B(g,2.3,.04,.9,cx,0,cz+.6,0x9a4a2a);B(g,.14,2.4,.3,cx-1.05,0,cz,0x7a5238);B(g,.14,2.4,.3,cx+1.05,0,cz,0x7a5238)}
@@ -384,7 +386,7 @@ const Q=[['Tekan 💼 agar Bos bekerja',()=>flags.worked,100,0],['Beli meja kedu
 function openQ(){sheet('📋 Misi','Selesaikan misi untuk hadiah!',Q.map((q,i)=>{const ok=q[1](),cl=claimed[i];return[(cl?'✅ ':ok?'🎁 Klaim: ':'⬜ ')+q[0]+' ($'+q[2]+(q[3]?' +'+q[3]+'💎':'')+')',()=>{coins+=q[2];gems+=q[3];claimed[i]=1;addXp(50);openQ();save()},ok&&!cl]}))}
 function openShop(){const n=emps.length-1;sheet('🛒 Toko','Rekrut tim dan tukar permata.',[['👤 Rekrut karyawan $'+(100+60*n),hire,coins>=100+60*n],['💎 Tukar $800 → 1 💎',()=>{if(coins>=800){coins-=800;gems++;openShop()}},coins>=800]])}
 function openList(){sheet('👥 Karyawan',emps.map(e=>e.n+(e.boss?' (Bos)':'')+' — energi '+Math.round(e.energy)+'% · $'+rate(e).toFixed(1)+'/dtk').join('<br>'),[])}
-function openMenu(){sheet('<span class="dots">•••</span><span>Menu</span>','Hari ini: $'+Math.floor(earned)+' dihasilkan total',[['Kamera dari atas',()=>{pol=.03;az=0;upd();closeSheet()},true,ICO.cam],['Tes cahaya: '+(lightTest==null?'jam asli HP':lightTest+':00'),()=>{const o=[null,6,12,18,22];lightTest=o[(o.indexOf(lightTest)+1)%o.length];applyLight();closeSheet()},true,ICO.sun],['Tes: undang pelamar sekarang',()=>{genApps();closeSheet()},true,ICO.users],['Mulai ulang (hapus progres)',()=>{localStorage.removeItem('sims2');location.reload()},true,ICO.rst,'dg']])}
+function openMenu(){sheet('<span class="dots">•••</span><span>Menu</span>','Hari ini: $'+Math.floor(earned)+' dihasilkan total',[['Kamera dari atas',()=>{pol=.03;az=0;upd();closeSheet()},true,ICO.cam],['Tes cahaya: '+(lightTest==null?'jam asli HP':lightTest+':00'),()=>{const o=[null,6,12,18,22];lightTest=o[(o.indexOf(lightTest)+1)%o.length];applyLight();closeSheet()},true,ICO.sun],['Tes: undang pelamar sekarang',()=>{genApps();closeSheet()},true,ICO.users],['Tes: tambah koin +$1000',()=>{coins+=1000;$('cn').textContent=Math.floor(coins);try{save()}catch(e){};toast('Koin +$1000');closeSheet()},true,ICO.cam],['Tes: tambah koin +$10000',()=>{coins+=10000;$('cn').textContent=Math.floor(coins);try{save()}catch(e){};toast('Koin +$10000');closeSheet()},true,ICO.cam],['Mulai ulang (hapus progres)',()=>{localStorage.removeItem('sims2');localStorage.removeItem('tp_mat');location.reload()},true,ICO.rst,'dg']])}
 $('cplus').onclick=()=>openQ();$('gplus').onclick=()=>PN.open('apps');
 $('tbB').onclick=()=>{buildMode=!buildMode;slots.forEach(refSlot);toast(buildMode?'Mode Bangun: tap ＋ untuk memasang':'Mode Bangun mati')};
 $('tbR').onclick=()=>PN.open('rooms');$('tbE').onclick=()=>PN.open('team');$('tbS').onclick=()=>PN.open('apps');$('tbM').onclick=openMenu;$('clip').onclick=openQ;$('bank').onclick=()=>sheet('🏛 Laporan','Level '+lvl+' · Karyawan '+(emps.length-1)+' · Total pendapatan $'+Math.floor(earned),[]);
@@ -522,8 +524,55 @@ let uidn=0;
   if(a=='ok'){if(!valid(f))return toast('Tidak muat di sini!');if(ed.isNew&&!ed.fi&&!spend(p[5]))return;if(ed.fi)inv[f.k]--;list.push(f);link(f);end();toast('✨ '+p[1]+' terpasang!');save()}
   if(a=='no'){if(ed.isNew)drop(f);else{Object.assign(f,ed.bak);pos(f);list.push(f)}end()}
   if(a=='se'){if(inUse(f))return toast('Masih dipakai karyawan');const v=Math.floor(p[5]/2);coins+=v;unlink(f);drop(f);end();toast('Terjual +$'+v);save()}});
- let view='cat',cat=null;
- function draw(){const g=$('shg');g.innerHTML='';$('shb').innerHTML=view=='cat'?ICO.cart:ICO.back;$('shx').onclick=()=>shut();
+ /* ===== TOKOPLUS: dinding & lantai + kategori Home Store ===== */
+const TPW=[["White Simple Tile",10,"#e8e8e8"],["Red Paint",11,"#8a3b36"],["Green Paint",11,"#4a6b45"],["Eggshell Paint",11,"#e0d3b8"],["White Paint",11,"#e6e6e2"],["Brown Paint",11,"#6b4636"],["Purple Paint",11,"#6a4f86"],["Pink Wall",11,"#d97fc0"],["Creme Paint",11,"#d9c9a3"],["Blue Paint",11,"#4a6078"],["Offwhite Paint",11,"#b9b8ae"],["Unpainted Wall",5,"#e9dfc9"]];
+const TPF=[["Plain Pine Floorboards",15,"#d9b27c"],["Rustic Plank",10,"#4a3a33"],["Blue Terrazzo",10,"#9aa0a0"],["Red Shag",10,"#5a0a0e"],["Blue Checkered Lino",15,"#a8cdd6"],["White Terrazzo",10,"#b8aea0"],["Yellow Shag",10,"#c99a0a"],["Sky Blue Carpet",5,"#4f8fc0"],["Old Brown Carpet",15,"#a79a7e"],["Red Terrazzo",10,"#5c2a20"],["Blue Shag",10,"#8a9aa8"],["Purple Carpet",5,"#5a2a70"]];
+TPF.push(["Japanese Cedar Planks",25,"img:LANTAI/textures/japanese_cedar_planks_diff_2k.jpg"],["Lacquered Cherry Wood",30,"img:LANTAI/textures/lacquered_cherry_wood_diff_4k.jpg"],["Oak Veneer",25,"img:LANTAI/textures/oak_veneer_05_diff_2k.jpg"],["Plank Flooring",25,"img:LANTAI/textures/plank_flooring_04_diff_2k.jpg"]);
+const TPOPEN=[["bedroom","Bedroom","🛏️"],["living","Living Room","🛋️"],["rugs","Rugs","🟫"],["outdoor","Outdoor Furniture","⛱️"],["bathroom","Bathroom","🚽"],["kitchen","Kitchen","🍳"],["dining","Dining Room","🍽️"],["lighting","Lighting","💡"],["electronics","Electronics","📺"],["counter","Counter Tops","🗄️"],["decor","Decorations","🗿"],["plants","Plants & Gardens","🌳"],["roofing","Roofing","🏚️"],["windows","Windows","🪟"],["outdoor_decor","Outdoor Decorations","🦩"],["doors","Doors","🚪"],["ext_walls","Exterior Walls","🧱"],["fireplaces","Fireplaces","🔥"],["chimneys","Chimneys","🏭"]];
+const TPLOCK=[["support_posts","Support Posts"],["railings","Railings"],["balcony_paving","Balcony Paving"],["patio_paving","Patio Paving"],["patio_gates","Patio Gates"],["stairs","Stairs"],["pets","Pets"],["toddler","Toddler"],["preteen","Preteen"],["teen","Teen"],["pool_items","Pool Items"],["pool_interior","Pool Interior"],["pool_paving","Pool Paving"],["roof_items","Roof Items"]];
+const TPS={stage:'mat',mat:null,room:-1,old:null,cost:0,isW:false,inited:false};
+function tpxShade(h,d){const n=parseInt(h.slice(1),16),c=v=>Math.max(0,Math.min(255,v));return '#'+((1<<24)+(c((n>>16)+d)<<16)+(c(((n>>8)&255)+d)<<8)+c((n&255)+d)).toString(16).slice(1)}
+function tpxLoad(){try{return JSON.parse(localStorage.getItem('tp_mat')||'{}')}catch(e){return {}}}
+function tpxSave(i){try{const M=tpxLoad(),r=rooms[i];M[r.id]={t:r.t,wc:r.wc};localStorage.setItem('tp_mat',JSON.stringify(M))}catch(e){}}
+function tpxSetFloor(i){const f=floors[i];if(!f)return;f.material.map=tex(...rooms[i].t);f.material.needsUpdate=true;applyExt()}
+function tpxRevert(){if(TPS.room<0)return;const i=TPS.room,r=rooms[i];if(TPS.isW){r.wc=TPS.old;buildWalls()}else{r.t=TPS.old;tpxSetFloor(i)}TPS.room=-1;$('tpbar').style.display='none'}
+function tpxPreview(i,cost,isW){tpxRevert();shut();TPS.room=i;TPS.cost=cost;TPS.isW=isW;const r=rooms[i];
+ if(isW){TPS.old=r.wc;r.wc=parseInt(TPS.mat.v.slice(1),16);buildWalls()}
+ else{TPS.old=r.t.slice();r.t=[TPS.mat.v,TPS.mat.v.indexOf('img:')==0?TPS.mat.v:tpxShade(TPS.mat.v,-14)];tpxSetFloor(i)}
+ $('tpbar').style.display='flex';$('tpcost').textContent='$'+cost}
+function tpxOk(){if(TPS.room<0)return;if(coins<TPS.cost){toast('Koin kurang');tpxRevert();return}
+ coins-=TPS.cost;tpxSave(TPS.room);TPS.room=-1;$('tpbar').style.display='none';$('cn').textContent=Math.floor(coins);try{save()}catch(e){}toast('Berhasil diganti!')}
+function tpxInit(){if(TPS.inited)return;TPS.inited=true;
+ FCAT.push(['h_walls','Walls','🧱']);FCAT.push(['h_floors','Floors','🟦']);
+ TPOPEN.forEach(c=>FCAT.push(['h_'+c[0],c[1],c[2]]));
+ TPLOCK.forEach(c=>FCAT.push(['h_'+c[0],c[1],'🔒']));
+ const b=document.createElement('div');b.id='tpbar';
+ b.style.cssText='position:fixed;left:50%;bottom:90px;transform:translateX(-50%);display:none;align-items:center;gap:12px;z-index:99;background:#000b;padding:8px 14px;border-radius:30px;color:#fff;font-weight:bold';
+ b.innerHTML='<button id="tpno" style="width:46px;height:46px;border-radius:50%;border:0;background:#e53935;color:#fff;font-size:22px">✕</button><span id="tpcost"></span><button id="tpok" style="width:46px;height:46px;border-radius:50%;border:0;background:#2e9e3a;color:#fff;font-size:22px">✓</button>';
+ document.body.appendChild(b);$('tpno').onclick=tpxRevert;$('tpok').onclick=tpxOk;
+ new MutationObserver(()=>{[...$('shg').children].forEach(d=>{if(d.textContent.indexOf('🔒')>=0&&!d.classList.contains('lk'))d.classList.add('lk')})}).observe($('shg'),{childList:true})}
+function tpxDraw(){
+ if(view=='cat'){TPS.stage='mat';return false}
+ if(view!='it'||!cat)return false;
+ const id=cat[0];
+ if(TPLOCK.some(c=>'h_'+c[0]==id)){view='cat';draw();toast('Terkunci 🔒');return true}
+ if(id!='h_walls'&&id!='h_floors')return false;
+ const isW=id=='h_walls',g=$('shg');g.innerHTML='';$('shb').innerHTML=ICO.back;$('sht').textContent=cat[1];
+ if(TPS.stage=='mat'){
+  (isW?TPW:TPF).forEach(m=>{const d=document.createElement('div');d.className='fcd';
+   d.innerHTML='<i style="display:block;width:46px;height:34px;margin:0 auto 4px;border:1px solid #000;border-radius:4px;background:'+(m[2].indexOf('img:')==0?'url('+m[2].slice(4)+') center/cover':m[2])+'"></i>'+m[0]+'<u class="v">$'+m[1]+'</u>';
+   d.onclick=()=>{TPS.mat={n:m[0],p:m[1],v:m[2]};TPS.stage='room';draw();toast('Pilih ruangan untuk '+m[0])};g.appendChild(d)});
+ }else{
+  rooms.forEach((r,i)=>{if(!owned[i])return;const [x0,x1,z0,z1]=RR(i),W=x1-x0,D=z1-z0,n=isW?Math.ceil((W+D)/2):Math.ceil(W*D/4),cost=TPS.mat.p*n;
+   const d=document.createElement('div');d.className='fcd';
+   d.innerHTML='<i>'+(isW?'🧱':'🟦')+'</i>'+r.n+'<u class="v">$'+cost+'</u>';
+   d.onclick=()=>tpxPreview(i,cost,isW);g.appendChild(d)});
+ }
+ return true}
+setTimeout(()=>{try{const M=tpxLoad();rooms.forEach((r,i)=>{const s=M[r.id];if(!s)return;if(s.t&&floors[i]){r.t=s.t;floors[i].material.map=tex(...s.t);floors[i].material.needsUpdate=true}if(s.wc!=null)r.wc=s.wc});applyExt();buildWalls()}catch(e){console.log('tp load',e)}},1500);
+/* ===== END TOKOPLUS ===== */
+let view='cat',cat=null;
+ function draw(){tpxInit();if(tpxDraw())return;const g=$('shg');g.innerHTML='';$('shb').innerHTML=view=='cat'?ICO.cart:ICO.back;$('shx').onclick=()=>shut();
   if(view=='cat'){$('sht').textContent='Toko Perabot';FCAT.forEach(c=>{const d=document.createElement('div'),ri=rooms.findIndex(q=>q.id==c[0]),lk=ri>=0&&!owned[ri];d.className='fcd'+(c[0]=='mvs'||c[0]=='rooms'?' or':'')+(lk?' lk':'');d.innerHTML='<i>'+c[2]+'</i>'+c[1]+(ri>=0?'<u class="'+(lk?'y':'v')+'">'+(lk?'Beli ruangan':'Lv'+RL[ri])+'</u>':'');
    d.onclick=()=>{if(c[0]=='mvs'){shut();return toast('Tap perabot di kantor untuk pindah, simpan, atau jual')}if(c[0]=='rooms'){shut();return RM.start()}cat=c;view='it';draw()};g.appendChild(d)})}
   else{$('sht').textContent=cat[1];const ri=rooms.findIndex(q=>q.id==cat[0]);
