@@ -211,13 +211,31 @@ const woodBase=cvT(64,(g,n)=>{const tn=['#c99a62','#bf8f58','#d3a46c','#b98752']
  g.fillStyle='#6b4524';for(let i=0;i<4;i++)g.fillRect(i*16,0,2,n);g.fillStyle='rgba(60,35,15,.45)';g.fillRect(0,10,n,3);g.fillRect(0,n-13,n,3)},1,1);
 const fm=l=>{const t=woodBase.clone();t.needsUpdate=true;t.repeat.set(Math.max(1,l/1.1),1);return new T.MeshLambertMaterial({map:t,color:0xf0f0f0})};
 const lawn=new T.Mesh(new T.PlaneGeometry(140,140),new T.MeshLambertMaterial({map:grassT(),color:0xf0f0f0}));lawn.rotation.x=-Math.PI/2;lawn.receiveShadow=true;sc.add(lawn);
-for(const s of[-1,1]){B(sc,5,.03,140,s*18,0,0,new T.MeshLambertMaterial({map:roadT()}));B(sc,1.6,.05,140,s*14.6,0,0,new T.MeshLambertMaterial({map:walkT(s<0),color:0xf0f0f0}));for(let z=-60;z<60;z+=5)B(sc,.2,.04,2,s*18,0,z,0xffffff)}
 function fence(x0,z0,x1,z1,gap){const hz=z0==z1,L=hz?x1-x0:z1-z0,seg=(a,b)=>{const l=b-a,m=(a+b)/2;if(l<.1)return;hz?B(sc,l,1.1,.12,m,0,z0,fm(l)):B(sc,.12,1.1,l,x0,0,m,fm(l));hz?B(sc,l,.12,.2,m,1.1,z0,0xb07a46):B(sc,.2,.12,l,x0,1.1,m,0xb07a46)};
  const a=hz?x0:z0;if(gap!=null){seg(a,gap-1);seg(gap+1,a+L)}else seg(a,a+L)}
-fence(-13,-11,13,-11);fence(-13,12,13,12,-4);fence(-13,-11,-13,12);fence(13,-11,13,12);
 const tree=(x,z,s=1)=>{C(sc,.22*s,1*s,x,0,z,0x7a5230);mk(sc,new T.ConeGeometry(1.2*s,2.2*s,8),x,2.1*s,z,0x2f8a4a);mk(sc,new T.ConeGeometry(.9*s,1.8*s,8),x,3.1*s,z,0x3aa05a)};
-[[-11,-9],[11,-9],[-11,9],[11,9],[9,-2],[-10.5,2],[0,-9.5],[7,10.5]].forEach(p=>tree(...p));
-for(let i=0;i<6;i++)B(sc,1,.05,.9,-4,0,6.8+i*.9,0xe3d3c6);B(sc,.3,.5,.4,-1.2,0,10,0x333333);B(sc,.1,.7,.1,-1.2,0,10,0x6a4a2a);C(sc,.3,.7,1.8,0,10,0x9aa3a8);
+const _n0=sc.children.length;[[-11,-9],[11,-9],[-11,9],[11,9],[9,-2],[-10.5,2],[0,-9.5],[7,10.5]].forEach(p=>tree(...p));const FBT=sc.children.slice(_n0);
+/* ===== LINGKUNGAN GLB: jalan di depan rumah & pohon ===== */
+const ZR=20,ROADW=10;
+{const g=new T.Group();B(g,150,.03,ROADW,0,0,ZR,0x868690);B(g,150,.05,1.6,0,0,ZR-ROADW/2-1,0xe3d3c6);for(let x=-70;x<=70;x+=5)B(g,2,.04,.2,x,0,ZR,0xffffff);sc.add(g);window.FBR=g}
+(function(){
+ const ld=src=>new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=no;document.head.appendChild(s)});
+ const need=()=>T.GLTFLoader?Promise.resolve():ld('GLTFLoader.js').catch(()=>ld('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/examples/js/loaders/GLTFLoader.js'));
+ const get=u=>need().then(()=>new Promise((ok,no)=>new T.GLTFLoader().load(u,g=>ok(g.scene),undefined,no)));
+ const fitH=(o,h)=>{const b=new T.Box3().setFromObject(o),z=b.getSize(new T.Vector3()),c=b.getCenter(new T.Vector3()),k=h/z.y,w=new T.Group();o.scale.setScalar(k);o.position.set(-c.x*k,-b.min.y*k,-c.z*k);w.add(o);return w};
+ get('models/highway-segment.glb').then(o=>{const b=new T.Box3().setFromObject(o),z=b.getSize(new T.Vector3()),c=b.getCenter(new T.Vector3()),ax=z.x>=z.z,k=ROADW/(ax?z.z:z.x),L=(ax?z.x:z.z)*k,h=Math.min(30,Math.floor((Math.ceil(150/L)+1)/2)),grp=new T.Group();
+  for(let i=-h;i<=h;i++){const w=new T.Group(),m=o.clone(true);m.scale.setScalar(k);m.position.set(-c.x*k,-b.min.y*k+.02,-c.z*k);w.add(m);if(!ax)w.rotation.y=Math.PI/2;w.position.set(i*L,0,ZR);grp.add(w)}
+  sc.add(grp);sc.remove(window.FBR)}).catch(e=>console.warn('jalan gagal dimuat',e));
+ const TS=[['apple-tree',3.8],['autumn-tree',4.8],['birch-tree',5.2],['oak-tree',5.6]];
+ Promise.all(TS.map(t=>get('models/'+t[0]+'.glb').then(o=>fitH(o,t[1])).catch(()=>null))).then(a=>{a=a.filter(Boolean);if(!a.length)return;
+  let sd=7;const r2=()=>(sd=(sd*16807)%2147483647)/2147483647,P=[];
+  for(let n=0;n<600&&P.length<32;n++){const an=r2()*6.283,r=14+r2()*34,x=Math.cos(an)*r*1.3,z=-2+Math.sin(an)*r*.9;
+   if(z>13.8||(Math.abs(x)<15&&z>-13&&z<14)||P.some(q=>Math.hypot(q[0]-x,q[1]-z)<3.4))continue;P.push([x,z])}
+  P.forEach(p=>{const t=a[Math.floor(r2()*a.length)].clone(true);t.scale.setScalar(.85+r2()*.4);t.rotation.y=r2()*6.28;t.position.set(p[0],0,p[1]);sc.add(t)});
+  FBT.forEach(o=>sc.remove(o))}).catch(e=>console.warn('pohon gagal dimuat',e));
+})();
+
+for(let i=0;i<10;i++)B(sc,1,.05,.9,-4,0,6.8+i*.9,0xe3d3c6);B(sc,.3,.5,.4,-1.2,0,10,0x333333);B(sc,.1,.7,.1,-1.2,0,10,0x6a4a2a);C(sc,.3,.7,1.8,0,10,0x9aa3a8);
 for(let i=0;i<14;i++){const x=-7.5+i*1.15;if(Math.abs(x+4)>1.6)[0xff5b7a,0xffd24a,0x6aa8ff].forEach((c,j)=>Sp(sc,.11,x+j*.14,.15,6.6+j*.1,c))}
 rooms.forEach((r,i)=>{const[c,rw]=rc(i);r.ox=-8+c*8;r.oz=-6+rw*6;
  const f=new T.Mesh(new T.PlaneGeometry(8,6),new T.MeshLambertMaterial({map:tex(...r.t)}));f.rotation.x=-Math.PI/2;f.position.set(r.ox+4,.03,r.oz+3);f.receiveShadow=true;sc.add(f);floors[i]=f;
