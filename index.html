@@ -211,8 +211,10 @@ const woodBase=cvT(64,(g,n)=>{const tn=['#c99a62','#bf8f58','#d3a46c','#b98752']
  g.fillStyle='#6b4524';for(let i=0;i<4;i++)g.fillRect(i*16,0,2,n);g.fillStyle='rgba(60,35,15,.45)';g.fillRect(0,10,n,3);g.fillRect(0,n-13,n,3)},1,1);
 const fm=l=>{const t=woodBase.clone();t.needsUpdate=true;t.repeat.set(Math.max(1,l/1.1),1);return new T.MeshLambertMaterial({map:t,color:0xf0f0f0})};
 const lawn=new T.Mesh(new T.PlaneGeometry(140,140),new T.MeshLambertMaterial({map:grassT(),color:0xf0f0f0}));lawn.rotation.x=-Math.PI/2;lawn.receiveShadow=true;sc.add(lawn);
-function fence(x0,z0,x1,z1,gap){const hz=z0==z1,L=hz?x1-x0:z1-z0,seg=(a,b)=>{const l=b-a,m=(a+b)/2;if(l<.1)return;hz?B(sc,l,1.1,.12,m,0,z0,fm(l)):B(sc,.12,1.1,l,x0,0,m,fm(l));hz?B(sc,l,.12,.2,m,1.1,z0,0xb07a46):B(sc,.2,.12,l,x0,1.1,m,0xb07a46)};
- const a=hz?x0:z0;if(gap!=null){seg(a,gap-1);seg(gap+1,a+L)}else seg(a,a+L)}
+/* rumput: texture Grass004 dari folder textures/ (kalau gagal dimuat, tetap pakai rumput buatan kode) */
+{const tl=new T.TextureLoader(),rp=t=>{t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.set(35,35);t.anisotropy=AN;return t};
+ tl.load('textures/Grass004_1K-JPG_Color.jpg',t=>{lawn.material.map=rp(t);lawn.material.color.set(0xffffff);lawn.material.needsUpdate=true;
+  tl.load('textures/Grass004_1K-JPG_NormalGL.jpg',n=>{lawn.material.normalMap=rp(n);lawn.material.needsUpdate=true},undefined,()=>{})},undefined,()=>console.warn('texture rumput belum ada, pakai bawaan'))}
 const tree=(x,z,s=1)=>{C(sc,.22*s,1*s,x,0,z,0x7a5230);mk(sc,new T.ConeGeometry(1.2*s,2.2*s,8),x,2.1*s,z,0x2f8a4a);mk(sc,new T.ConeGeometry(.9*s,1.8*s,8),x,3.1*s,z,0x3aa05a)};
 const _n0=sc.children.length;[[-11,-9],[11,-9],[-11,9],[11,9],[9,-2],[-10.5,2],[0,-9.5],[7,10.5]].forEach(p=>tree(...p));const FBT=sc.children.slice(_n0);
 /* ===== LINGKUNGAN GLB: jalan di depan rumah & pohon ===== */
@@ -226,8 +228,8 @@ const ZR=20,ROADW=10;
  get('models/highway-segment.glb').then(o=>{const b=new T.Box3().setFromObject(o),z=b.getSize(new T.Vector3()),c=b.getCenter(new T.Vector3()),ax=z.x>=z.z,k=ROADW/(ax?z.z:z.x),L=(ax?z.x:z.z)*k,h=Math.min(30,Math.floor((Math.ceil(150/L)+1)/2)),grp=new T.Group();
   for(let i=-h;i<=h;i++){const w=new T.Group(),m=o.clone(true);m.scale.setScalar(k);m.position.set(-c.x*k,-b.min.y*k+.02,-c.z*k);w.add(m);if(!ax)w.rotation.y=Math.PI/2;w.position.set(i*L,0,ZR);grp.add(w)}
   sc.add(grp);sc.remove(window.FBR)}).catch(e=>console.warn('jalan gagal dimuat',e));
- const TS=[['apple-tree',3.8],['autumn-tree',4.8],['birch-tree',5.2],['oak-tree',5.6]];
- Promise.all(TS.map(t=>get('models/'+t[0]+'.glb').then(o=>fitH(o,t[1])).catch(()=>null))).then(a=>{a=a.filter(Boolean);if(!a.length)return;
+ const DT=['apple-tree','autumn-tree','birch-tree','oak-tree'];
+ fetch('models/trees.json').then(r=>r.ok?r.json():DT).catch(()=>DT).then(L=>Promise.all(L.map(n=>get('models/'+n+'.glb').then(o=>fitH(o,4.8)).catch(()=>null)))).then(a=>{a=a.filter(Boolean);if(!a.length)return;
   let sd=7;const r2=()=>(sd=(sd*16807)%2147483647)/2147483647,P=[];
   for(let n=0;n<600&&P.length<32;n++){const an=r2()*6.283,r=14+r2()*34,x=Math.cos(an)*r*1.3,z=-2+Math.sin(an)*r*.9;
    if(z>13.8||(Math.abs(x)<15&&z>-13&&z<14)||P.some(q=>Math.hypot(q[0]-x,q[1]-z)<3.4))continue;P.push([x,z])}
