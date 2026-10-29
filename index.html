@@ -441,7 +441,56 @@ g.beginPath();g.moveTo(64,0);g.lineTo(64,128);g.moveTo(0,64);g.lineTo(128,64);g.
 const t=new T.CanvasTexture(c);t.anisotropy=4;if(T.SRGBColorSpace)t.colorSpace=T.SRGBColorSpace;JLC[k]=t;return t}
 function jlB(k){return g=>{const m=new T.Mesh(new T.BoxGeometry(.98,.08,.98),new T.MeshLambertMaterial({map:jlTex(k)}));m.position.y=.04;m.receiveShadow=true;g.add(m)}}
 FCAT.push(['jalan','Jalan','🛣️']);
-const FC={
+
+function elDesk(g,c){B(g,1.6,.08,.8,0,.7,0,c);B(g,.08,.7,.7,-.7,0,0,c);B(g,.08,.7,.7,.7,0,0,c);B(g,.5,.08,.5,0,.45,.95,0x2a3f6a);B(g,.5,.5,.06,0,.5,1.2,0x2a3f6a);C(g,.04,.45,0,0,.95,0x333333)}
+function elB(t,c){return g=>{switch(t){
+case 'tv':B(g,1.6,.28,.5,0,0,0,c);B(g,.5,.05,.3,0,.28,0,0x222222);B(g,1.5,.85,.07,0,.33,0,0x0d0d0f);B(g,1.4,.74,.02,0,.39,.04,0x1a2433);break;
+case 'wtv':B(g,1.7,.95,.05,0,.45,0,0x0d0d0f);B(g,1.6,.85,.02,0,.5,.03,0x1a2433);B(g,1.2,.1,.35,0,0,0,c);break;
+case 'crt':B(g,.8,.65,.7,0,0,0,c);B(g,.55,.45,.05,0,.1,.36,0x222222);B(g,.02,.5,.02,-.15,.65,0,0x999999);B(g,.02,.5,.02,.15,.65,0,0x999999);break;
+case 'shelf':B(g,1.5,.06,.5,0,0,0,c);B(g,1.5,.06,.5,0,.3,0,c);B(g,.06,.3,.5,-.72,0,0,c);B(g,.06,.3,.5,.72,0,0,c);B(g,.5,.14,.35,0,.36,0,0x222222);B(g,.3,.5,.3,-.55,.36,0,0x1a1a1a);B(g,.3,.5,.3,.55,.36,0,0x1a1a1a);break;
+case 'tower':B(g,.5,1.4,.5,-.8,0,0,0x1a1a22);B(g,.5,1.4,.5,.8,0,0,0x1a1a22);B(g,1.1,.08,.5,0,.6,0,c);B(g,.4,.15,.3,0,.68,0,0x222222);break;
+case 'mono':B(g,.8,.45,.4,0,0,0,c);B(g,.25,.3,.05,-.2,.08,.2,0x222222);B(g,.25,.3,.05,.2,.08,.2,0x222222);break;
+case 'fan':C(g,.25,.06,0,0,0,0x555555);C(g,.04,.9,0,.06,0,0x777777);B(g,.8,.8,.06,0,.5,0,c);break;
+case 'lap':elDesk(g,c);B(g,.5,.03,.35,0,.78,0,0x333333);B(g,.5,.32,.03,0,.81,-.17,0x222222);B(g,.44,.26,.01,0,.84,-.15,0x4aa8ff);break;
+case 'pc':elDesk(g,c);B(g,.6,.45,.45,0,.78,-.1,0xd8d2bf);B(g,.5,.35,.02,0,.84,.13,0x2a4a2a);B(g,.35,.06,.25,0,.78,.45,0x555555);B(g,.25,.5,.5,.55,.78,0,0xd8d2bf);break;
+case 'ph':B(g,.3,.05,.3,0,0,0,0xdddddd);B(g,.12,.45,.1,0,.05,0,c);break;
+case 'wph':B(g,.4,.6,.2,0,0,0,c);B(g,.25,.2,.03,0,.25,.11,0x888888);B(g,.1,.35,.1,-.22,.1,0,0x222222);break;
+case 'con':B(g,.6,.08,.4,0,0,0,c);B(g,.2,.05,.15,.1,.08,0,0x333333);B(g,.1,.04,.1,-.15,.08,.05,0xdd3333);break;
+}}}
+const EL_=[
+['Onion Caramel TV','📺',2,1,1800,1,'wtv',0x8a5a2b],
+['Purple 70s Stereo','🔊',2,1,1500,1,'shelf',0x6a4a9a],
+['Small Flat Screen TV','📺',2,1,500,1,'tv',0x999999],
+['Beige Computer','🖥️',2,2,650,1,'pc',0x555555],
+['Stylish Laptop','💻',2,2,1500,1,'lap',0x8a5a2b],
+['Cordless Phone','☎️',1,1,200,1,'ph',0xeeeeee],
+['Humungovision TV','📺',2,1,1250,1,'tv',0xa65a3a],
+['Calcutronic Computer','🖥️',2,2,1500,1,'pc',0x7a3a2a],
+['Stereo Sound System','🔊',2,1,2700,1,'shelf',0x333333],
+['Bunny Ears TV','📺',1,1,50,1,'crt',0x9a7a55],
+['OTT TV','📺',2,1,5500,1,'tv',0xdddddd],
+['Mono Stereo','📻',1,1,300,1,'mono',0x9a7a55],
+['Thumping Stereo','🔊',2,1,1500,1,'tower',0x222222],
+['Faulty Co. Fan','🌀',1,1,750,1,'fan',0x8ab0c0],
+['Semi-pro Laptop','💻',2,2,1500,8,'lap',0x3a2a20],
+['Stereosonic Sound','🔊',2,1,2500,1,'shelf',0xb08a55],
+['Games Console','🎮',1,1,300,1,'con',0xdddddd],
+['Future Audio Sound','🔊',2,1,2700,8,'shelf',0x111111],
+['Back Beat Sound System','🔊',2,1,2500,1,'shelf',0x6a1e1e],
+['Light Wall TV','📺',2,1,1750,8,'wtv',0xb08a55],
+['Lime Green TV','📺',2,1,1800,9,'wtv',0x6ab04a],
+['Home Office Laptop','💻',2,2,1650,9,'lap',0x5a1e1e],
+['White Wall TV','📺',2,1,1700,10,'wtv',0xeeeeee],
+['z0M9 Stereo','🔊',3,1,4500,10,'tower',0xdddddd],
+['S570 Laptop','💻',2,2,1500,9,'lap',0xeeeeee],
+['Dark Wall TV','📺',2,1,1800,10,'wtv',0x5a1e1e],
+['ET Phone','☎️',1,1,800,10,'wph',0x2a6fb0],
+['PEBKAC Computer','🖥️',2,2,3000,10,'pc',0xeeeeee]
+];
+const ELR=['work','lounge','meeting','research','studio','it','trader','recept','pantry','bed'];
+const ELFC={};EL_.forEach((e,i)=>{ELFC['el'+(i+1)]=['elektronik',e[0],e[1],e[2],e[3],e[4],e[5],elB(e[6],e[7]),null,ELR,1]});
+FCAT.push(['elektronik','Electronics','📺']);
+const FC={...ELFC,
 jl1:['jalan','Paving Abu','⬜',1,1,20,1,jlB('jl1'),null,[],1],
 jl2:['jalan','Aspal','⬛',1,1,15,1,jlB('jl2'),null,[],1],
 jl3:['jalan','Batu Alam','🟫',1,1,30,1,jlB('jl3'),null,[],1],
