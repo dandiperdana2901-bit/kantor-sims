@@ -490,7 +490,84 @@ const EL_=[
 const ELR=['work','lounge','meeting','research','studio','it','trader','recept','pantry','bed'];
 const ELFC={};EL_.forEach((e,i)=>{ELFC['el'+(i+1)]=['elektronik',e[0],e[1],e[2],e[3],e[4],e[5],elB(e[6],e[7]),null,ELR,1]});
 FCAT.push(['elektronik','Electronics','📺']);
-const FC={...ELFC,
+
+const LTL=[];
+function ltMk(g,k,p){const o={g:g,k:k,t0:performance.now(),mats:[],dots:[],col:new T.Color(p.l||0xffd9a0),int:p.i||1.4,dist:p.d||6,h:p.h||1,in:false};LTL.push(o);return o}
+function ltG(o,geo,x,y,z,c,an){const m=new T.MeshBasicMaterial({color:c});const me=new T.Mesh(geo,m);me.position.set(x,y,z);o.g.add(me);if(an)o.mats.push(m);return me}
+function ltCy(o,r1,r2,h,x,y,z,c,an){return ltG(o,new T.CylinderGeometry(r1,r2,h,14),x,y+h/2,z,c,an)}
+function ltSp(o,r,x,y,z,c,an){return ltG(o,new T.SphereGeometry(r,14,10),x,y,z,c,an)}
+function ltBx(o,w,h,d,x,y,z,c,an){return ltG(o,new T.BoxGeometry(w,h,d),x,y+h/2,z,c,an)}
+function ltB(k,p){return function(g){
+const o=ltMk(g,k,p),S=p.s||0xffe2b0,Bc=p.b||0x6b4a2a;
+if(k==='table'){o.h=.7;C(g,.18,.05,0,0,0,Bc);C(g,.035,.4,0,.05,0,Bc);ltCy(o,.1,.2,.28,0,.42,0,S)}
+else if(k==='tall'){o.h=1.7;C(g,.22,.05,0,0,0,Bc);C(g,.03,1.35,0,.05,0,Bc);ltCy(o,.14,.25,.35,0,1.35,0,S)}
+else if(k==='wall'){o.h=1.4;B(g,.3,.4,.06,0,1.1,-.42,Bc);B(g,.35,.04,.04,0,1.28,-.3,Bc);ltCy(o,.06,.11,.2,-.14,1.3,-.3,S);ltCy(o,.06,.11,.2,.14,1.3,-.3,S)}
+else if(k==='down'){o.h=1.7;B(g,.02,.45,.02,0,1.95,0,0x444444);C(g,.2,.2,0,1.75,0,Bc);ltCy(o,.16,.16,.03,0,1.72,0,S)}
+else if(k==='orbs'){o.h=.8;C(g,.2,.05,0,0,0,0x555566);C(g,.02,.45,0,.05,0,0x555566);ltSp(o,.12,0,.5,0,S);ltSp(o,.09,.12,.75,.05,S);ltSp(o,.07,-.1,.95,-.05,S)}
+else if(k==='scifi'){o.h=1.5;C(g,.2,.04,0,0,0,0x666b75);C(g,.025,1.2,0,.04,0,0x888d99);ltSp(o,.1,0,1.35,0,S);ltSp(o,.07,.1,1.55,0,S);ltSp(o,.05,-.08,1.7,.03,S)}
+else if(k==='neon'){o.h=1.1;B(g,1.8,.7,.05,0,.9,-.4,0x15151c);ltBx(o,1.5,.07,.03,0,1.3,-.36,0xff3fa0);ltBx(o,1.5,.07,.03,0,1.05,-.36,0x3fa8ff);ltBx(o,.07,.3,.03,-.7,1.1,-.36,0xff3fa0);ltBx(o,.07,.3,.03,.7,1.1,-.36,0x3fa8ff)}
+else if(k==='led'||k==='rgb'){const an=(k==='rgb');o.h=.6;C(g,.2,.05,0,0,0,0x222228);ltCy(o,.07,.07,.9,0,.05,0,S,an);C(g,.09,.04,0,.95,0,0x222228)}
+else if(k==='disco'){o.h=1.75;C(g,.25,.05,0,0,0,0x222228);C(g,.03,1.3,0,.05,0,0x888888);ltSp(o,.3,0,1.75,0,0xffffff,true);
+o.wire=new T.Mesh(new T.SphereGeometry(.31,10,8),new T.MeshBasicMaterial({color:0x000000,wireframe:true}));o.wire.position.set(0,1.75,0);g.add(o.wire);
+for(let i=0;i<6;i++){const m=new T.MeshBasicMaterial({color:0xffffff});const me=new T.Mesh(new T.SphereGeometry(.06,8,6),m);g.add(me);o.dots.push({me:me,m:m})}}
+}}
+const LTN=4,LTP=[];
+for(let i=0;i<LTN;i++){const l=new T.PointLight(0xffffff,0,6,1.5);sc.add(l);LTP.push(l)}
+let ltAs=0;
+function ltTick(ts){requestAnimationFrame(ltTick);try{
+const t=ts/1000;
+for(let i=0;i<LTL.length;i++){const o=LTL[i];
+if(o.k==='rgb')o.col.setHSL((t*.1)%1,1,.5);
+else if(o.k==='disco'){o.col.setHSL((Math.floor(t*2.5)*.17)%1,1,.5);
+o.dots.forEach((d,j)=>{const a=t*1.6+j*1.0472;d.me.position.set(Math.cos(a)*.65,1.75+Math.sin(t*2+j)*.3,Math.sin(a)*.65);d.m.color.setHSL((t*.35+j/6)%1,1,.55)});
+if(o.wire)o.wire.rotation.y=t*.8}
+if(o.mats.length)o.mats.forEach(m=>m.color.copy(o.col))}
+if(ts-ltAs>400){ltAs=ts;
+for(let i=LTL.length-1;i>=0;i--){const o=LTL[i];let p=o.g;while(p&&p!==sc)p=p.parent;o.in=(p===sc);if(!o.in&&ts>o.t0+3000)LTL.splice(i,1)}
+const cp=(typeof cam!=='undefined')?cam.position:null;
+const act=LTL.filter(o=>o.in);
+act.forEach(o=>{o.g.updateMatrixWorld(true);o.wp=o.wp||new T.Vector3();o.wp.set(0,o.h,0);o.g.localToWorld(o.wp);o.d=(cp?o.wp.distanceTo(cp):0)-(o.k==='disco'?4:0)});
+act.sort((a,b)=>a.d-b.d);
+LTP.forEach((l,i)=>{const n=act[i]||null;if(l.userData.o!==n)l.intensity*=.3;l.userData.o=n})}
+LTP.forEach(l=>{const o=l.userData.o;
+if(o){l.position.copy(o.wp);l.color.copy(o.col);l.distance=o.dist;let tg=o.int;if(o.k==='disco')tg*=.75+.25*Math.sin(t*10);l.intensity+=(tg-l.intensity)*.15}
+else l.intensity+=(0-l.intensity)*.15})
+}catch(e){}}
+requestAnimationFrame(ltTick);
+const LTR=Object.assign([],{includes:function(){return true}});
+const LT_=[
+['El Cheapo Table Lamp','💡',1,1,200,1,'table',{s:0xe8c9a0,b:0x8a6a3a,l:0xffd9a0,i:1.3,d:5}],
+['Galactic Glow Orbs','🔮',1,1,1500,1,'orbs',{s:0x6ad0ff,l:0x6ad0ff,i:1.4,d:5.5}],
+['Scifi Floor Lamp','🔵',1,1,1500,1,'scifi',{s:0x7fdcff,l:0x7fdcff,i:1.5,d:6}],
+['Shade Wall Lamp','🕯️',1,1,120,1,'wall',{s:0xcfc6b4,b:0x8a8a8a,l:0xffe0b0,i:1.1,d:4.5}],
+['Elegant Table Lamp','💡',1,1,600,1,'table',{s:0xd9a43a,b:0x6a3e1a,l:0xffc870,i:1.5,d:5.5}],
+['El Cheapo Tall Lamp','🏮',1,1,250,1,'tall',{s:0xe0c9a0,b:0x9a7a4a,l:0xffd9a0,i:1.5,d:6.5}],
+['Bronze Stained Glass Lamp','🏮',1,1,3000,1,'tall',{s:0xc8503a,b:0x6a4a2a,l:0xff9a6a,i:1.6,d:6}],
+['Ornate Wall Lamp','🕯️',1,1,120,1,'wall',{s:0xf4eedc,b:0xb08a3a,l:0xfff0d0,i:1.1,d:4.5}],
+['Retro Table Lamp','💡',1,1,1000,1,'table',{s:0x9ac82a,b:0x7a4aa8,l:0xcfff80,i:1.4,d:5}],
+['Stained Glass Lamp','🏮',1,1,7500,1,'tall',{s:0x3ab0a0,b:0x8a9a8a,l:0x9fffe0,i:1.7,d:6}],
+['Bell Wall Lamp','🕯️',1,1,120,1,'wall',{s:0xd8cdb8,b:0x9a8a78,l:0xffe0b0,i:1.1,d:4.5}],
+['Wedding Downlight','🔦',1,1,150,1,'down',{s:0xffffff,b:0xeeeeee,l:0xfff4e6,i:1.4,d:6}],
+['Blues Bar Neon Sign','🌈',2,1,2000,1,'neon',{l:0xc070ff,i:1.5,d:6}],
+['Carbon Down Light','🔦',1,1,600,8,'down',{s:0xffe8c0,b:0x222222,l:0xffe8c0,i:1.4,d:6}],
+['Elegant Tall Lamp','🏮',1,1,500,8,'tall',{s:0xe0a83a,b:0xa07a2a,l:0xffd070,i:1.5,d:6.5}],
+['Gold Down Light','🔦',1,1,650,8,'down',{s:0xffd890,b:0xc09a50,l:0xffd890,i:1.4,d:6}],
+['Ocean Down Light','🔦',1,1,500,8,'down',{s:0x6ab0ff,b:0x1a4a9a,l:0x7ab8ff,i:1.4,d:6}],
+['White Down Light','🔦',1,1,750,8,'down',{s:0xffffff,b:0xf0f0f0,l:0xffffff,i:1.5,d:6.5}],
+['LED Merah','🔴',1,1,300,1,'led',{s:0xff2a2a,l:0xff2a2a,i:1.5,d:5.5}],
+['LED Hijau','🟢',1,1,300,1,'led',{s:0x2aff4a,l:0x2aff4a,i:1.5,d:5.5}],
+['LED Biru','🔵',1,1,300,1,'led',{s:0x2a5aff,l:0x2a5aff,i:1.6,d:5.5}],
+['LED Kuning','🟡',1,1,300,1,'led',{s:0xffe02a,l:0xffe02a,i:1.5,d:5.5}],
+['LED Ungu','🟣',1,1,300,1,'led',{s:0xa02aff,l:0xa02aff,i:1.6,d:5.5}],
+['LED Cyan','🔷',1,1,300,1,'led',{s:0x2affea,l:0x2affea,i:1.5,d:5.5}],
+['LED Pink','🩷',1,1,300,1,'led',{s:0xff3fa8,l:0xff3fa8,i:1.5,d:5.5}],
+['LED Putih','⚪',1,1,300,1,'led',{s:0xffffff,l:0xffffff,i:1.5,d:5.5}],
+['LED Berubah Warna','🌈',1,1,900,1,'rgb',{s:0xff2a2a,l:0xff2a2a,i:1.6,d:6}],
+['Lampu Disco','🪩',1,1,1800,1,'disco',{l:0xff2a2a,i:2.2,d:7}]
+];
+const LTFC={};LT_.forEach((e,i)=>{LTFC['lt'+(i+1)]=['lampu',e[0],e[1],e[2],e[3],e[4],e[5],ltB(e[6],e[7]),null,LTR,1]});
+FCAT.push(['lampu','Lighting','💡']);
+const FC={...LTFC,...ELFC,
 jl1:['jalan','Paving Abu','⬜',1,1,20,1,jlB('jl1'),null,[],1],
 jl2:['jalan','Aspal','⬛',1,1,15,1,jlB('jl2'),null,[],1],
 jl3:['jalan','Batu Alam','🟫',1,1,30,1,jlB('jl3'),null,[],1],
