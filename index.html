@@ -721,7 +721,12 @@ function frame(now){requestAnimationFrame(frame);const dt=Math.min(.1,(now-last)
  if(mode=='create'){R.setScissorTest(false);R.render(pv,ccam);return}
  cool=Math.max(0,cool-dt);boost=Math.max(0,boost-dt);let inc=0;
  emps.forEach(e=>{updE(e,dt);const r=rate(e);inc+=r;coins+=r*dt;earned+=r*dt;xp+=0;e.acc+=r*dt;if(e.acc>=Math.max(2,r*4)){pop(e.g.position.x,2.5,e.g.position.z,'+'+Math.floor(e.acc));addXp(e.acc/6);e.acc=0}});
- WL.forEach(w=>{const lo=w.sh||((cam.position.x-w.cx)*w.nx+(cam.position.z-w.cz)*w.nz>0),t=w.sh?.35:lo?.18:1;w.g.scale.y+=(t-w.g.scale.y)*Math.min(1,dt*8)});
+ WL.forEach(w=>{const lo=w.sh||(!window.SOLIDW&&((cam.position.x-w.cx)*w.nx+(cam.position.z-w.cz)*w.nz>0));
+const ts=w.sh?.35:1,to=(!w.sh&&lo)?.12:1,k=Math.min(1,dt*8);
+w.g.scale.y+=(ts-w.g.scale.y)*k;
+if(!w.mc){w.mc=[];w.op=1;w.g.traverse(o=>{if(o.isMesh&&o.material&&!Array.isArray(o.material)){o.material=o.material.clone();o.material.userData.o0=o.material.opacity;w.mc.push(o.material)}})}
+w.op+=(to-w.op)*k;
+w.mc.forEach(m=>{const tr=w.op<.99||m.userData.o0<1;if(m.transparent!==tr){m.transparent=tr;m.needsUpdate=true}m.opacity=m.userData.o0*w.op;m.depthWrite=w.op>.5||m.userData.o0>=1&&w.op>.99})});
  rooms.forEach((r,i)=>{if(!owned[i])r.lk.position.y=1.8+Math.sin(clock*2+i)*.12});slots.forEach(s=>{if(s.mk.visible)s.mk.children[1].position.y=1.3+Math.sin(clock*3)*.1});
  pb.position.set(boss.g.position.x,2.75+Math.sin(clock*3)*.1,boss.g.position.z);pb.rotation.y+=dt*2;if(pvChar)pvChar.rotation.y=Math.sin(clock*.6)*.3;
  sec+=dt;if(sec>=1){sec=0;tickApps();$('cn').textContent=Math.floor(coins);$('gn').textContent=gems;$('lvn').textContent=lvl;$('lv').style.background='conic-gradient(#38c6ff '+(xp/(lvl*150)*100)+'%,#12365c 0)';$('eb').style.width=boss.energy+'%';
@@ -834,4 +839,16 @@ body.pt #acts{left:112px}
 #rmx{background:linear-gradient(#10365e,#08223f)}
 #rot{background:#07203c}
 </style>
-</body></html>
+<script>
+(function(){
+try{window.SOLIDW=localStorage.getItem('solidw')==='1'}catch(e){window.SOLIDW=false}
+const b=document.createElement('button');
+b.id='solidbtn';
+b.innerHTML='<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+b.style.cssText='position:fixed;left:8px;top:178px;width:44px;height:44px;border-radius:14px;border:2px solid #2a7fd4;color:#fff;z-index:50;display:flex;align-items:center;justify-content:center;padding:0';
+function paint(){b.style.background=window.SOLIDW?'#1e88e5':'#0b2a55'}
+paint();
+b.onclick=function(){window.SOLIDW=!window.SOLIDW;try{localStorage.setItem('solidw',window.SOLIDW?'1':'0')}catch(e){}paint();if(typeof toast==='function')toast(window.SOLIDW?'Dinding selalu solid':'Dinding transparan otomatis')};
+document.body.appendChild(b);
+})();
+</script></body></html>
