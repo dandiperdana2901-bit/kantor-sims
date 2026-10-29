@@ -67,15 +67,39 @@ body.cr #hud,body.cr #lc,body.cr #port,body.cr #acts,body.cr #tabs{display:none}
 function lock(){try{if(!document.fullscreenElement&&d.requestFullscreen)d.requestFullscreen({navigationUI:'hide'}).catch(function(){});}catch(e){}
 try{screen.orientation.lock('landscape').catch(function(){});}catch(e){}}
 addEventListener('pointerdown',lock,{once:true});
-if('serviceWorker' in navigator)addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})});})();
+if('serviceWorker' in navigator){var had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',function(){if(had)location.reload()});addEventListener('load',function(){navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).catch(function(){})})}})();
 </script>
 <script>
 if(typeof THREE==='undefined'){document.body.innerHTML='<p style="color:#fff;padding:20px;font:16px sans-serif">three.min.js tidak ditemukan. Jalankan ulang setup.sh (butuh internet sekali).</p>';throw new Error('no three')}
 const T=THREE,$=id=>document.getElementById(id),rnd=a=>a[Math.floor(Math.random()*a.length)];
 const R=new T.WebGLRenderer({canvas:$('c'),antialias:true});R.setPixelRatio(Math.min(devicePixelRatio,2));R.shadowMap.enabled=true;R.shadowMap.type=T.PCFSoftShadowMap;
 const sc=new T.Scene();sc.background=new T.Color(0x8fd0ff);const cam=new T.PerspectiveCamera(40,1,.1,300);
-sc.add(new T.HemisphereLight(0xffffff,0x9ab88a,.85));
+const hemi=new T.HemisphereLight(0xffffff,0x9ab88a,.6);sc.add(hemi);
 const dl=new T.DirectionalLight(0xfff3dd,.85);dl.position.set(-10,22,14);dl.castShadow=true;dl.shadow.mapSize.set(2048,2048);Object.assign(dl.shadow.camera,{left:-22,right:22,top:22,bottom:-22,near:1,far:70});sc.add(dl);
+
+/* ===== cahaya mengikuti jam asli HP: pagi, siang, sore, malam ===== */
+const LK=[ /* jam, langit, hemi atas, hemi bawah, kuat hemi, warna matahari, kuat matahari */
+[0,0x0c1430,0x8090c8,0x2a3450,.75,0x9fb4ff,.28],
+[5,0x1a2347,0x8090c8,0x2a3450,.72,0xa8b8ff,.28],
+[6,0xf2a678,0xffd2a8,0x6e7a52,.5,0xffa860,.55],
+[7.5,0xb5cfe6,0xf2ecdc,0x7d8a5c,.55,0xffe2b8,.6],
+[10,0xa6d2f0,0xeef4ff,0x84925e,.58,0xfff4dc,.6],
+[14,0xa0cfee,0xeef4ff,0x84925e,.58,0xfff6e6,.6],
+[17,0xb2cbdc,0xfff0dc,0x7d8a5c,.55,0xffd9a8,.58],
+[18.3,0xf08a58,0xffbf94,0x6a6a4c,.48,0xff8040,.5],
+[19.5,0x3d3a6e,0x8078b0,0x2c3040,.6,0xa088c8,.3],
+[21,0x0c1430,0x8090c8,0x2a3450,.75,0x9fb4ff,.28],
+[24,0x0c1430,0x8090c8,0x2a3450,.75,0x9fb4ff,.28]];
+let lightTest=null;const lc=new T.Color();
+function applyLight(){
+ const d=new Date(),h=lightTest!=null?lightTest:d.getHours()+d.getMinutes()/60;
+ let i=0;while(i<LK.length-2&&h>=LK[i+1][0])i++;
+ const a=LK[i],b=LK[i+1],k=Math.min(1,Math.max(0,(h-a[0])/(b[0]-a[0])));
+ sc.background.set(a[1]).lerp(lc.set(b[1]),k);
+ hemi.color.set(a[2]).lerp(lc.set(b[2]),k);hemi.groundColor.set(a[3]).lerp(lc.set(b[3]),k);hemi.intensity=a[4]+(b[4]-a[4])*k;
+ dl.color.set(a[5]).lerp(lc.set(b[5]),k);dl.intensity=a[6]+(b[6]-a[6])*k;
+ if(h>=6&&h<=18.5){const p=(h-6)/12.5,el=.28+.9*Math.sin(Math.PI*p);dl.position.set(Math.cos(Math.PI*p)*30*Math.cos(el),Math.sin(el)*30,10+8*Math.cos(el))}else dl.position.set(-8,26,12)}
+applyLight();setInterval(applyLight,15000);
 const pv=new T.Scene();pv.background=new T.Color(0x3fb0ff);pv.add(new T.HemisphereLight(0xffffff,0x88aacc,1));const pd=new T.DirectionalLight(0xffffff,.6);pd.position.set(2,4,5);pv.add(pd);
 const ccam=new T.PerspectiveCamera(30,1,.1,50),pcam=new T.PerspectiveCamera(26,.7,.1,30);ccam.position.set(0,1.1,6);ccam.lookAt(0,1,0);pcam.position.set(0,1.62,3.4);pcam.lookAt(0,1.55,0);
 const mats={},M=c=>typeof c=='number'?(mats[c]||(mats[c]=new T.MeshLambertMaterial({color:c}))):c,E=c=>mats['e'+c]||(mats['e'+c]=new T.MeshBasicMaterial({color:c}));
@@ -167,12 +191,12 @@ function walkT(flip){return cvT(128,(g,n)=>{if(flip){g.translate(n,0);g.scale(-1
  g.fillStyle='#b4533a';for(let i=0;i<4;i++){g.beginPath();g.moveTo(0,i*32);g.lineTo(30,i*32+16);g.lineTo(0,i*32+32);g.closePath();g.fill()}
  g.strokeStyle='#bfa898';g.beginPath();g.moveTo(34,0);g.lineTo(34,n);g.stroke()
 },1,87.5)}
-function roadT(){return cvT(128,(g,n)=>{g.fillStyle='#6d6d76';g.fillRect(0,0,n,n);for(let i=0;i<900;i++){const v=90+Math.random()*50|0;g.fillStyle='rgb('+v+','+v+','+(v+8)+')';g.fillRect(Math.random()*n,Math.random()*n,2,2)}},1,28)}
+function roadT(){return cvT(128,(g,n)=>{g.fillStyle='#868690';g.fillRect(0,0,n,n);for(let i=0;i<900;i++){const v=112+Math.random()*46|0;g.fillStyle='rgb('+v+','+v+','+(v+8)+')';g.fillRect(Math.random()*n,Math.random()*n,2,2)}},1,28)}
 const woodBase=cvT(64,(g,n)=>{const tn=['#c99a62','#bf8f58','#d3a46c','#b98752'];for(let i=0;i<4;i++){g.fillStyle=tn[i];g.fillRect(i*16,0,16,n);g.fillStyle='rgba(90,55,25,.35)';for(let k=0;k<5;k++)g.fillRect(i*16+2+Math.random()*11,0,1,n)}
  g.fillStyle='#6b4524';for(let i=0;i<4;i++)g.fillRect(i*16,0,2,n);g.fillStyle='rgba(60,35,15,.45)';g.fillRect(0,10,n,3);g.fillRect(0,n-13,n,3)},1,1);
-const fm=l=>{const t=woodBase.clone();t.needsUpdate=true;t.repeat.set(Math.max(1,l/1.1),1);return new T.MeshLambertMaterial({map:t,color:0xdddddd})};
-const lawn=new T.Mesh(new T.PlaneGeometry(140,140),new T.MeshLambertMaterial({map:grassT(),color:0xaaaaaa}));lawn.rotation.x=-Math.PI/2;lawn.receiveShadow=true;sc.add(lawn);
-for(const s of[-1,1]){B(sc,5,.03,140,s*18,0,0,new T.MeshLambertMaterial({map:roadT()}));B(sc,1.6,.05,140,s*14.6,0,0,new T.MeshLambertMaterial({map:walkT(s<0),color:0xc8c8c8}));for(let z=-60;z<60;z+=5)B(sc,.2,.04,2,s*18,0,z,0xffffff)}
+const fm=l=>{const t=woodBase.clone();t.needsUpdate=true;t.repeat.set(Math.max(1,l/1.1),1);return new T.MeshLambertMaterial({map:t,color:0xf0f0f0})};
+const lawn=new T.Mesh(new T.PlaneGeometry(140,140),new T.MeshLambertMaterial({map:grassT(),color:0xf0f0f0}));lawn.rotation.x=-Math.PI/2;lawn.receiveShadow=true;sc.add(lawn);
+for(const s of[-1,1]){B(sc,5,.03,140,s*18,0,0,new T.MeshLambertMaterial({map:roadT()}));B(sc,1.6,.05,140,s*14.6,0,0,new T.MeshLambertMaterial({map:walkT(s<0),color:0xf0f0f0}));for(let z=-60;z<60;z+=5)B(sc,.2,.04,2,s*18,0,z,0xffffff)}
 function fence(x0,z0,x1,z1,gap){const hz=z0==z1,L=hz?x1-x0:z1-z0,seg=(a,b)=>{const l=b-a,m=(a+b)/2;if(l<.1)return;hz?B(sc,l,1.1,.12,m,0,z0,fm(l)):B(sc,.12,1.1,l,x0,0,m,fm(l));hz?B(sc,l,.12,.2,m,1.1,z0,0xb07a46):B(sc,.2,.12,l,x0,1.1,m,0xb07a46)};
  const a=hz?x0:z0;if(gap!=null){seg(a,gap-1);seg(gap+1,a+L)}else seg(a,a+L)}
 fence(-13,-11,13,-11);fence(-13,12,13,12,-4);fence(-13,-11,-13,12);fence(13,-11,13,12);
@@ -202,12 +226,12 @@ function buildWalls(){wg.clear();WL=[];for(let i=0;i<4;i++){if(!owned[i])continu
 function mkDesk(l){const g=new T.Group(),tc=[0xd9a066,0xffffff,0x2b2b3a,0x1c1c28][l-1],s_=[0x7ec8ff,0x9fe3ff,0xff7ee0,0x7effc8][l-1];
  B(g,2.2,.1,1,0,.72,0,tc);B(g,.1,.72,.9,-1,0,0,tc);B(g,.1,.72,.9,1,0,0,tc);const n=[1,1,2,3][l-1];
  for(let i=0;i<n;i++){const x=(i-(n-1)/2)*.75;B(g,.7,.45,.05,x,.84,-.25,0x20202c);B(g,.62,.37,.02,x,.88,-.22,E(s_))}
- B(g,.6,.03,.2,0,.82,.2,0x39394a);B(g,.12,.12,.12,.8,.82,.25,0xffffff);if(l>=3)B(g,2.2,.03,.03,0,.68,.48,E(0xff5fd0));
+ B(g,.6,.03,.2,0,.82,.2,0x39394a);B(g,.12,.12,.12,.8,.82,.25,0xffffff);if(l>=3)B(g,2.2,.03,.03,0,.68,.48,0xd04fa8);
  C(g,.32,.1,0,.42,1.1,0x4aa8e8);B(g,.6,.55,.1,0,.5,1.38,0x4aa8e8);C(g,.05,.42,0,0,1.1,0x666666);return g}
 function mkDeco(l){const g=new T.Group();C(g,.3,.4,0,0,0,0xe8a07e,.38);for(let i=0;i<l+2;i++){const a=i*2.4;Sp(g,.32,Math.cos(a)*.22,.55+i*.2,Math.sin(a)*.22,i%2?0x5cb86a:0x7ad085)}
  if(l>1)for(let i=0;i<l*2;i++){const a=i*1.7;Sp(g,.07,Math.cos(a)*.4,.7+i*.1,Math.sin(a)*.4,0xff7eb0)}g.scale.setScalar(1+.25*l);return g}
 function mkRest(l){const g=new T.Group();B(g,2.4,.45,1.1,0,0,0,0xff9fc4);B(g,2.4,.6,.3,0,.45,-.45,0xff8fb8);B(g,.3,.35,1.1,-1.1,.45,0,0xff8fb8);B(g,.3,.35,1.1,1.1,.45,0,0xff8fb8);B(g,2,.12,.9,0,.4,0,0xffc0da);
- if(l>=2){B(g,.7,1,.6,1.9,0,-.2,0xe8e8f0);B(g,.5,.15,.05,1.9,.6,.12,0xff5f6f)}if(l>=3){C(g,.5,.5,-2.1,0,.6,0xfff0f5);C(g,.04,1.5,-1.6,0,-.4,0x888899);Sp(g,.22,-1.6,1.6,-.4,E(0xfff0b0))}return g}
+ if(l>=2){B(g,.7,1,.6,1.9,0,-.2,0xe8e8f0);B(g,.5,.15,.05,1.9,.6,.12,0xff5f6f)}if(l>=3){C(g,.5,.5,-2.1,0,.6,0xfff0f5);C(g,.04,1.5,-1.6,0,-.4,0x888899);Sp(g,.22,-1.6,1.6,-.4,0xe8dca0)}return g}
 const MK={d:mkDesk,p:mkDeco,r:mkRest};
 function refSlot(s){if(s.g){sc.remove(s.g);s.g=null}const l=items[s.k]||0;if(l){s.g=MK[s.t](l);s.g.position.set(s.x,0,s.z);sc.add(s.g)}s.mk.visible=!l&&!!owned[s.r]&&buildMode}
 function refAll(){rooms.forEach((r,i)=>{floors[i].visible=!!owned[i];r.lk.visible=r.hit.userData.ref.dead!==true&&!owned[i];r.hit.userData.ref.dead=!!owned[i]});slots.forEach(refSlot);buildWalls()}
@@ -260,7 +284,7 @@ const Q=[['Tekan 💼 agar Bos bekerja',()=>flags.worked,100,0],['Beli meja kedu
 function openQ(){sheet('📋 Misi','Selesaikan misi untuk hadiah!',Q.map((q,i)=>{const ok=q[1](),cl=claimed[i];return[(cl?'✅ ':ok?'🎁 Klaim: ':'⬜ ')+q[0]+' (§'+q[2]+(q[3]?' +'+q[3]+'💎':'')+')',()=>{coins+=q[2];gems+=q[3];claimed[i]=1;addXp(50);openQ();save()},ok&&!cl]}))}
 function openShop(){const n=emps.length-1;sheet('🛒 Toko','Rekrut tim dan tukar permata.',[['👤 Rekrut karyawan §'+(100+60*n),hire,coins>=100+60*n],['💎 Tukar §800 → 1 💎',()=>{if(coins>=800){coins-=800;gems++;openShop()}},coins>=800]])}
 function openList(){sheet('👥 Karyawan',emps.map(e=>e.n+(e.boss?' (Bos)':'')+' — energi '+Math.round(e.energy)+'% · §'+rate(e).toFixed(1)+'/dtk').join('<br>'),[])}
-function openMenu(){sheet('⋯ Menu','Hari ini: §'+Math.floor(earned)+' dihasilkan total',[['Kamera dari atas',()=>{pol=.03;az=0;upd();closeSheet()}],['Mulai ulang (hapus progres)',()=>{localStorage.removeItem('sims2');location.reload()}]])}
+function openMenu(){sheet('⋯ Menu','Hari ini: §'+Math.floor(earned)+' dihasilkan total',[['Kamera dari atas',()=>{pol=.03;az=0;upd();closeSheet()}],['Tes cahaya: '+(lightTest==null?'jam asli HP':lightTest+':00'),()=>{const o=[null,6,12,18,22];lightTest=o[(o.indexOf(lightTest)+1)%o.length];applyLight();closeSheet()}],['Mulai ulang (hapus progres)',()=>{localStorage.removeItem('sims2');location.reload()}]])}
 $('tbB').onclick=()=>{buildMode=!buildMode;slots.forEach(refSlot);toast(buildMode?'Mode Bangun: tap ＋ untuk memasang':'Mode Bangun mati')};
 $('tbR').onclick=openRooms;$('tbE').onclick=openList;$('tbS').onclick=openShop;$('tbM').onclick=openMenu;$('clip').onclick=openQ;$('bank').onclick=()=>sheet('🏛 Laporan','Level '+lvl+' · Karyawan '+(emps.length-1)+' · Total pendapatan §'+Math.floor(earned),[]);
 $('aw').onclick=()=>{if(boss.st=='work'){boss.k=null;go(boss,-1,3,'idle');return toast('Bos berhenti bekerja')}const s=freeDesk();if(!s)return toast('Butuh meja kosong');boss.k=s.k;const q=seat(s.k);go(boss,q[0],q[1],'work');flags.worked=1};
